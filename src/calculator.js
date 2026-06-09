@@ -18,7 +18,29 @@ function divide(x, y) {
   return x / y;
 }
 
-module.exports = { add, subtract, multiply, divide };
+// Extended operations
+// modulo: returns the remainder of a divided by b
+function modulo(x, y) {
+  if (y === 0) {
+    throw new Error('Modulo by zero');
+  }
+  return x % y;
+}
+
+// power: returns base raised to exponent
+function power(base, exponent) {
+  return Math.pow(base, exponent);
+}
+
+// squareRoot: returns the square root of n; throws on negative input
+function squareRoot(n) {
+  if (n < 0) {
+    throw new Error('Square root of negative number');
+  }
+  return Math.sqrt(n);
+}
+
+module.exports = { add, subtract, multiply, divide, modulo, power, squareRoot };
 
 // CLI entrypoint runs only when this file is executed directly
 if (require.main === module) {
@@ -26,13 +48,50 @@ if (require.main === module) {
 
   function usage() {
     console.log('Usage: node src/calculator.js <operation> <num1> <num2>');
-    console.log('Operations: add (+), subtract (-), multiply (* or x), divide (/)');
+    console.log('For unary operations (sqrt) pass only one number: node src/calculator.js sqrt <num>');
+    console.log('Operations: add (+), subtract (-), multiply (* or x), divide (/), mod (%), pow (^) , sqrt');
     console.log('Examples:');
     console.log('  node src/calculator.js add 2 3      # 5');
     console.log('  node src/calculator.js / 10 2       # 5');
+    console.log('  node src/calculator.js mod 10 3     # 1');
+    console.log('  node src/calculator.js pow 2 8      # 256');
+    console.log('  node src/calculator.js sqrt 9       # 3');
   }
 
-  if (!op || !aRaw || !bRaw) {
+  if (!op) {
+    usage();
+    process.exitCode = 1;
+    process.exit(1);
+  }
+
+  const opLower = op.toLowerCase();
+
+  // For sqrt (unary) only aRaw is required
+  if (opLower === 'sqrt' || opLower === 'square' || opLower === 'sqr') {
+    if (!aRaw) {
+      usage();
+      process.exitCode = 1;
+      process.exit(1);
+    }
+    const n = Number(aRaw);
+    if (Number.isNaN(n)) {
+      console.error('Error: operand must be a valid number.');
+      process.exitCode = 2;
+      process.exit(2);
+    }
+    try {
+      const res = squareRoot(n);
+      console.log(res);
+      process.exit(0);
+    } catch (err) {
+      console.error('Error:', err.message);
+      process.exitCode = 4;
+      process.exit(4);
+    }
+  }
+
+  // Binary operations require two operands
+  if (!aRaw || !bRaw) {
     usage();
     process.exitCode = 1;
     process.exit(1);
@@ -49,7 +108,7 @@ if (require.main === module) {
 
   let result;
   try {
-    switch (op.toLowerCase()) {
+    switch (opLower) {
       case 'add':
       case '+':
         result = add(a, b);
@@ -69,6 +128,16 @@ if (require.main === module) {
       case '÷':
         result = divide(a, b);
         break;
+      case 'mod':
+      case '%':
+      case 'modulo':
+        result = modulo(a, b);
+        break;
+      case 'pow':
+      case '^':
+      case 'power':
+        result = power(a, b);
+        break;
       case 'help':
       case '--help':
       case '-h':
@@ -82,6 +151,7 @@ if (require.main === module) {
   } catch (err) {
     console.error('Error:', err.message);
     process.exitCode = 4;
+    process.exit(4);
   }
 
   if (result !== undefined) {
