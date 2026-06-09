@@ -35,7 +35,7 @@ if (require.main === module) {
   if (!op || !aRaw || !bRaw) {
     usage();
     process.exitCode = 1;
-    return;
+    process.exit(1);
   }
 
   const a = Number(aRaw);
@@ -44,7 +44,7 @@ if (require.main === module) {
   if (Number.isNaN(a) || Number.isNaN(b)) {
     console.error('Error: Both operands must be valid numbers.');
     process.exitCode = 2;
-    return;
+    process.exit(2);
   }
 
   let result;
